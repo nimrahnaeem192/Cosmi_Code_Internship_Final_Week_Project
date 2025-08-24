@@ -1,0 +1,208 @@
+import sqlite3
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+# Add expense function
+def add_expense():
+    connection = sqlite3.connect("expenses_record.db")
+    cursor = connection.cursor()
+    
+    cursor.execute (
+    """ 
+    CREATE TABLE IF NOT EXISTS expenses (
+       ID INTEGER PRIMARY KEY AUTOINCREMENT,
+       date TEXT NOT NULL,
+       category TEXT NOT NULL,
+       amount REAL NOT NULL,
+       description TEXT
+    )  
+    """
+    )
+    
+    date = input("Enter the date (YYYY-MM-DD): ")
+    category = input("Enter the category (e.g., Food, Transport, Utilities): ")
+    amount = float(input("Enter the amount: "))
+    description = input("Enter a description (optional): ")
+
+
+    cursor.execute(
+    """
+    INSERT INTO expenses (date, category, amount, description)
+    VALUES (?, ?, ?, ?)
+    """, (date, category, amount, description)
+        )
+
+    connection.commit()
+    connection.close()
+
+    print("\n Expenses added sucessfully!")
+    
+    
+# View Expense function
+
+def view_expenses():
+    connection = sqlite3.connect("expenses_record.db")
+    cursor = connection.cursor()
+
+    cursor.execute("SELECT * FROM expenses")
+    rows = cursor.fetchall()
+
+    if rows:
+        print("\n All Expenses:\n")
+        for row in rows:
+            print(f"ID: {row[0]} \n Date: {row[1]} \n Category: {row[2]} \n Amount: ${row[3]:.2f} \n Description: {row[4]}\n")
+        
+    else:
+        print("\n No expenses found.")
+    
+    
+    connection.close()
+    
+    
+# Filter Expense function
+
+def filter_expenses():
+    connection = sqlite3.connect("expenses_record.db")
+    cursor = connection.cursor()
+
+
+    print("\nFilter Expenses")
+    print("1. By Date")
+    print("2. By Category")
+
+    choice = int(input("Choose an option (1 or 2): "))
+
+    if choice == 1:
+        date = input("Enter the date (YYYY-MM-DD): ")
+        cursor.execute("SELECT * FROM expenses WHERE date = ?", (date,))    
+        rows = cursor.fetchall()
+    
+    elif choice == 2:
+        category = input("Enter the category (e.g., Food, Transport, Utilities): ")
+        cursor.execute("SELECT * FROM expenses WHERE category = ?", (category,))
+        rows = cursor.fetchall()
+
+    else:
+        print("Invalid choice.")
+
+
+    if rows:
+        print("\n Filtered Expenses:\n")
+        for row in rows:
+            print(f"ID: {row[0]} \n Date: {row[1]} \n Category: {row[2]} \n Amount: ${row[3]:.2f} \n Description: {row[4]}\n")
+
+    else:
+        print("\n No expenses found.")
+    
+    
+    connection.close()
+    
+    
+# Report function
+def expense_report():
+    connection = sqlite3.connect("expenses_record.db")
+    df = pd.read_sql_query("SELECT * FROM expenses", connection)
+    connection.close()
+
+    if df.empty:
+        print("\n No expenses found to generate report.")
+
+    else:
+        print("\n Expense Report:\n")
+        
+        
+        # Total expenses
+        total_expenses = df['amount'].sum()
+        print(f"Total Expenses: ${total_expenses}\n")
+    
+        # Expense by category
+        category_expense = df.groupby('category')['amount'].sum()
+        print(f"Expense by category:\n{category_expense}\n")
+    
+        # Expense by date
+        date_expense = df.groupby('date')['amount'].sum()
+        print(f"Expense by date:\n{date_expense}\n")
+    
+        # Visualization Pie Chart
+        category_expense.plot(kind = 'pie', autopct = "%1.1f%%", figsize= (6,6))
+        plt.title("Expenses by Category")
+        plt.ylabel("")
+        plt.show()
+    
+    
+        # Visualization Line Chart
+        date_expense.plot(kind= 'line', marker = 'o', figsize= (8,5))
+        plt.title("Daily Expenses")
+        plt.xlabel("Date")
+        plt.ylabel("Amount ($)")
+        plt.grid(True)
+        plt.show()
+        
+    # Delete Expense function 
+def delete_expense():
+    connection = sqlite3.connect("expenses_record.db")
+    cursor = connection.cursor()
+
+    # Show all expenses first
+    cursor.execute("SELECT * FROM expenses")
+    rows = cursor.fetchall()
+
+    if not rows:
+        print("\n No expenses found to delete.")
+        connection.close()
+        return
+
+    print("\n Existing Expenses:\n")
+    for row in rows:
+        print(f"ID: {row[0]} \n Date: {row[1]} \n Category: {row[2]} \n Amount: ${row[3]:.2f} \n Description: {row[4]}")
+
+    try:
+        expense_id = int(input("\nEnter the ID of the expense to delete: "))
+        cursor.execute("DELETE FROM expenses WHERE ID = ?", (expense_id,))
+        connection.commit()
+
+        if cursor.rowcount > 0:   # checks if anything was actually deleted
+            print(f"\n✅ Expense with ID {expense_id} deleted successfully!")
+        else:
+            print(f"\n No expense found with ID {expense_id}.")
+    except ValueError:
+        print("\n Invalid input. Please enter a numeric ID.")
+
+    connection.close()
+    
+    
+    
+# Main menu function
+def main_menu():
+    while True:
+        print("\nExpense Tracker Menu")
+        print("1. Add Expense")     
+        print("2. View Expenses")
+        print("3. Filter Expenses")
+        print("4. Expense Report")
+        print("5. Delete Expense")
+        print("6. Exit")
+        
+        choice_ex = input("Choose an option (1-6): ")
+        
+        if choice_ex == '1':
+            add_expense()
+        
+        elif choice_ex == '2':
+            view_expenses() 
+            
+        elif choice_ex == '3':  
+            filter_expenses()
+            
+        elif choice_ex == '4':
+            expense_report()
+
+        elif choice_ex == '5':
+            delete_expense()
+            
+        elif choice_ex == '6':
+            print("Goodbye!")
+            break
+        
+main_menu()
