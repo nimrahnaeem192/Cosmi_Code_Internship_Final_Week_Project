@@ -162,8 +162,8 @@ def delete_expense():
         cursor.execute("DELETE FROM expenses WHERE ID = ?", (expense_id,))
         connection.commit()
 
-        if cursor.rowcount > 0:   # checks if anything was actually deleted
-            print(f"\n✅ Expense with ID {expense_id} deleted successfully!")
+        if cursor.rowcount > 0:  
+            print(f"\n Expense with ID {expense_id} deleted successfully!")
         else:
             print(f"\n No expense found with ID {expense_id}.")
     except ValueError:
