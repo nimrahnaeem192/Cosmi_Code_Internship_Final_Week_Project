@@ -14,10 +14,6 @@ Setup Instructions
 
 Usage Guide
 
-Screenshots
-
-Documentation
-
 Project Description
 
 The Expense Tracker App helps individuals monitor daily expenses efficiently. Users can add expenses, view them in a structured format, filter by category or date, delete entries, and generate visual reports to gain insights into spending patterns.
@@ -81,15 +77,5 @@ Generate Reports – View total, category-wise, and date-wise expenses.
 
 Visualize Data – Generate pie and line charts for easy analysis.
 
-
-Documentation
-
-The project documentation includes:
-
-Detailed explanation of code structure and modules
-
-Database schema and table details
-
-How each function works (Add, View, Filter, Delete, Reports, Visualizations)
 
 Sample queries and expected output
